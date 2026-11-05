@@ -6,3 +6,4 @@ function replyRate(days) {
   return replies / contacted;
 }
 module.exports = { replyRate };
+// x
