@@ -5,5 +5,11 @@ jobs:
   gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - run: if [ -f FAIL ]; then echo failing; exit 1; fi; echo passing
+      - run: if [ -n "$S" ]; then echo PR_REPO_SECRET_REACHED; else echo PR_REPO_SECRET_EMPTY; fi
+        env: {S: "${{ secrets.DUMMY_REPO_SECRET }}"}
+  envjob:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - run: if [ -n "$S" ]; then echo PR_ENV_SECRET_REACHED; else echo PR_ENV_SECRET_EMPTY; fi
+        env: {S: "${{ secrets.DUMMY_SECRET }}"}
