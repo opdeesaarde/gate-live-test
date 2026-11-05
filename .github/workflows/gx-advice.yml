@@ -1,0 +1,28 @@
+name: gx-advice
+# Advice only: this job never fails a change on what it finds.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+permissions: {contents: read, pull-requests: write}
+concurrency: {group: "gx-advice-${{ github.event.pull_request.number }}", cancel-in-progress: true}
+jobs:
+  review:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with: {fetch-depth: 0}
+      - name: Read instructions from the main branch, not from the change
+        env: {BASE_REF: "${{ github.event.pull_request.base.ref }}"}
+        run: |
+          mkdir -p /tmp/gx-prompts
+          for f in run.sh short_prompt.md full_prompt.md; do git show "origin/$BASE_REF:.github/gx-vet/$f" > "/tmp/gx-prompts/$f"; done
+      - name: Give advice
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.GX_VET_ANTHROPIC_KEY }}
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+          PROMPTS: /tmp/gx-prompts
+        run: bash /tmp/gx-prompts/run.sh
