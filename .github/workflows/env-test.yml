@@ -1,0 +1,14 @@
+name: env-test
+on: workflow_dispatch
+jobs:
+  envjob:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - run: if [ -n "$S" ]; then echo SECRET_REACHED; else echo SECRET_EMPTY; fi
+        env: {S: "${{ secrets.DUMMY_SECRET }}"}
+  repojob:
+    runs-on: ubuntu-latest
+    steps:
+      - run: if [ -n "$S" ]; then echo REPO_SECRET_REACHED; else echo REPO_SECRET_EMPTY; fi
+        env: {S: "${{ secrets.DUMMY_REPO_SECRET }}"}
